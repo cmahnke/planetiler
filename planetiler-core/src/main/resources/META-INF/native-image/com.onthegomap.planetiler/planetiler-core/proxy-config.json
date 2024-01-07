@@ -1,0 +1,5 @@
+[
+  {
+    "interfaces":["com.onthegomap.planetiler.util.Madvise$NativeC","jnr.ffi.provider.LoadedLibrary"]
+  }
+]
