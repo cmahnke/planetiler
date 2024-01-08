@@ -283,16 +283,21 @@
               <agent>
                 <enabled>true</enabled>
                 <options>
+                  <builtinCallerFilter>true</builtinCallerFilter>
+                  <builtinHeuristicFilter>true</builtinHeuristicFilter>
                   <enableExperimentalPredefinedClasses>true</enableExperimentalPredefinedClasses>
                   <enableExperimentalUnsafeAllocationTracing>true</enableExperimentalUnsafeAllocationTracing>
                   <trackReflectionMetadata>true</trackReflectionMetadata>
                 </options>
               </agent>
+              <jvmArgs>
+                <arg>-Djava.awt.headless=false</arg>
+              </jvmArgs>
               <fallback>true</fallback>
               <verbose>true</verbose>
               <mainClass>${mainClass}</mainClass>
               <buildArgs>
-                <arg>-H:+UnlockExperimentalVMOptions -H:+UseServiceLoaderFeature -H:-InlineBeforeAnalysis -march=native -H:DashboardDump=planetiler -H:+DashboardAll -H:EnableURLProtocols=http,https,file --initialize-at-build-time=org.geotools.util.ConverterFactory</arg>
+                <arg>-H:+SupportPredefinedClasses -Djava.awt.headless=true -H:+UnlockExperimentalVMOptions -H:+UseServiceLoaderFeature -H:-InlineBeforeAnalysis -march=native -H:DashboardDump=planetiler -H:+DashboardAll -H:EnableURLProtocols=http,https,file --initialize-at-build-time=org.geotools.util.ConverterFactory</arg>
               </buildArgs>
               <imageName>planetiler</imageName>
             </configuration>
@@ -315,6 +320,7 @@
                   <executable>java</executable>
                   <workingDirectory>${project.build.directory}</workingDirectory>
                   <arguments>
+                    <argument>-Djava.awt.headless=true</argument>
                     <argument>-classpath</argument>
                     <classpath/>
                     <argument>${mainClass}</argument>

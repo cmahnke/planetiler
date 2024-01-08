@@ -1,0 +1,11 @@
+[
+  {
+    "name":"org.geotools.data.util.ColorConverterFactory",
+    "allPublicMethods":true,
+    "allDeclardConstructors":true,
+    "allDeclaredFields":true
+  },
+  {
+    "name":"java.awt.Toolkit"
+  }
+]

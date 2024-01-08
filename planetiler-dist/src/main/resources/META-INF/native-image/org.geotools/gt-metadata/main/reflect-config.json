@@ -1,0 +1,8 @@
+[
+  {
+    "name":"org.geotools.util.ConverterFactory",
+    "allPublicMethods":true,
+    "allDeclardConstructors":true,
+    "allDeclaredFields":true
+  }
+]
