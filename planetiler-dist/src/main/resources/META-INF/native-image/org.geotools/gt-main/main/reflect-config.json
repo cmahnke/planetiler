@@ -4,8 +4,5 @@
     "allPublicMethods":true,
     "allDeclardConstructors":true,
     "allDeclaredFields":true
-  },
-  {
-    "name":"java.awt.Toolkit"
   }
 ]

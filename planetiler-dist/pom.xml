@@ -252,6 +252,11 @@
           <artifactId>log4j-over-slf4j</artifactId>
           <version>2.0.10</version>
         </dependency>
+        <dependency>
+          <groupId>net.java.dev.jna</groupId>
+          <artifactId>jna-platform</artifactId>
+          <version>5.14.0</version>
+        </dependency>
       </dependencies>
       <build>
         <plugins>
@@ -290,14 +295,17 @@
                   <trackReflectionMetadata>true</trackReflectionMetadata>
                 </options>
               </agent>
+              <!--
               <jvmArgs>
                 <arg>-Djava.awt.headless=false</arg>
               </jvmArgs>
+              -->
               <fallback>true</fallback>
               <verbose>true</verbose>
               <mainClass>${mainClass}</mainClass>
+              <!-- - -initialize-at-build-time=org.geotools.util.factory.FactoryRegistry - -initialize-at-build-time=java.awt.Color - -initialize-at-build-time=com.onthegomap.planetiler.util.Madvise -H:-InlineBeforeAnalysis  -->
               <buildArgs>
-                <arg>-H:+SupportPredefinedClasses -Djava.awt.headless=true -H:+UnlockExperimentalVMOptions -H:+UseServiceLoaderFeature -H:-InlineBeforeAnalysis -march=native -H:DashboardDump=planetiler -H:+DashboardAll -H:EnableURLProtocols=http,https,file --initialize-at-build-time=org.geotools.util.ConverterFactory</arg>
+                <arg>-R:MaxJavaStackTraceDepth=0 -H:+SupportPredefinedClasses -Djava.awt.headless=true -H:+UnlockExperimentalVMOptions -H:+UseServiceLoaderFeature  -march=native -H:+DashboardAll -H:EnableURLProtocols=http,https,file</arg>
               </buildArgs>
               <imageName>planetiler</imageName>
             </configuration>
@@ -320,7 +328,9 @@
                   <executable>java</executable>
                   <workingDirectory>${project.build.directory}</workingDirectory>
                   <arguments>
+                    <!--
                     <argument>-Djava.awt.headless=true</argument>
+                    -->
                     <argument>-classpath</argument>
                     <classpath/>
                     <argument>${mainClass}</argument>
