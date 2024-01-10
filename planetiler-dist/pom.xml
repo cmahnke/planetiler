@@ -132,6 +132,15 @@
           <skip>true</skip>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>com/onthegomap/planetiler/util/**</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
   <profiles>
@@ -197,6 +206,15 @@
               </execution>
             </executions>
           </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>com/onthegomap/planetiler/util/**</exclude>
+              </excludes>
+            </configuration>
+          </plugin>
         </plugins>
       </build>
     </profile>
@@ -224,6 +242,10 @@
             <exclusion>
               <groupId>org.apache.logging.log4j</groupId>
               <artifactId>log4j-core</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.github.jnr</groupId>
+              <artifactId>jnr-ffi</artifactId>
             </exclusion>
           </exclusions>
         </dependency>
@@ -254,12 +276,21 @@
         </dependency>
         <dependency>
           <groupId>net.java.dev.jna</groupId>
+          <artifactId>jna</artifactId>
+          <version>5.14.0</version>
+        </dependency>
+        <dependency>
+          <groupId>net.java.dev.jna</groupId>
           <artifactId>jna-platform</artifactId>
           <version>5.14.0</version>
         </dependency>
       </dependencies>
       <build>
         <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+          </plugin>
           <plugin>
             <groupId>org.graalvm.buildtools</groupId>
             <artifactId>native-maven-plugin</artifactId>
@@ -300,12 +331,12 @@
                 <arg>-Djava.awt.headless=false</arg>
               </jvmArgs>
               -->
-              <fallback>true</fallback>
+              <fallback>false</fallback>
               <verbose>true</verbose>
               <mainClass>${mainClass}</mainClass>
-              <!-- - -initialize-at-build-time=org.geotools.util.factory.FactoryRegistry - -initialize-at-build-time=java.awt.Color - -initialize-at-build-time=com.onthegomap.planetiler.util.Madvise -H:-InlineBeforeAnalysis  -->
+              <!-- - -initialize-at-build-time=org.geotools.util.factory.FactoryRegistry - -initialize-at-build-time=java.awt.Color - -initialize-at-build-time=com.onthegomap.planetiler.util.Madvise -H:-InlineBeforeAnalysis -H:+SupportPredefinedClasses -Djava.awt.headless=true  -->
               <buildArgs>
-                <arg>-R:MaxJavaStackTraceDepth=0 -H:+SupportPredefinedClasses -Djava.awt.headless=true -H:+UnlockExperimentalVMOptions -H:+UseServiceLoaderFeature  -march=native -H:+DashboardAll -H:EnableURLProtocols=http,https,file</arg>
+                <arg>-Djava.awt.headless=false --initialize-at-run-time=java.awt.Toolkit,org.geotools.util.factory.FactoryRegistry,org.geotools.data.util.ColorConverterFactory -R:MaxJavaStackTraceDepth=0 -H:+UnlockExperimentalVMOptions -H:+UseServiceLoaderFeature -march=native -H:+DashboardAll -H:EnableURLProtocols=http,https,file</arg>
               </buildArgs>
               <imageName>planetiler</imageName>
             </configuration>
@@ -328,9 +359,8 @@
                   <executable>java</executable>
                   <workingDirectory>${project.build.directory}</workingDirectory>
                   <arguments>
-                    <!--
-                    <argument>-Djava.awt.headless=true</argument>
-                    -->
+                    <argument>-Djava.awt.headless=false</argument>
+                    <argument>-Djava.library.path=${env.JAVA_HOME}/lib</argument>
                     <argument>-classpath</argument>
                     <classpath/>
                     <argument>${mainClass}</argument>
@@ -354,6 +384,9 @@
                   <goal>exec</goal>
                 </goals>
                 <configuration>
+                  <environmentVariables>
+                    <LD_LIBRARY_PATH>${env.JAVA_HOME}/lib</LD_LIBRARY_PATH>
+                  </environmentVariables>
                   <executable>${project.build.directory}/${imageName}</executable>
                   <workingDirectory>${project.build.directory}</workingDirectory>
                 </configuration>

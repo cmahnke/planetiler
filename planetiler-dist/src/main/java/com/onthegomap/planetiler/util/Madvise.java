@@ -30,8 +30,7 @@ import java.nio.ByteBuffer;
 //import jnr.ffi.types.size_t;
 import com.sun.jna.Native;
 import com.sun.jna.Library;
-
-import sun.misc.Unsafe;
+import com.sun.jna.platform.unix.LibCAPI.size_t;
 
 /**
  * Wrapper for native madvise function to be used via the public API
@@ -85,7 +84,7 @@ class Madvise {
     long alignedAddress = alignedAddress(address);
     long alignedSize = alignedSize(alignedAddress, capacity);
     try {
-      int val = nativeC.posix_madvise(alignedAddress, alignedSize, value);
+      int val = nativeC.posix_madvise(new size_t(alignedAddress), new size_t(alignedSize), value);
       if (val != 0) {
         throw new IOException(String.format("System call madvise failed with code: %d", val));
       }
@@ -96,7 +95,7 @@ class Madvise {
 
   public interface NativeC extends Library {
 
-    int posix_madvise(long address, long size, int advice);
+    int posix_madvise(size_t address, size_t size, int advice);
 
     int getpagesize();
   }

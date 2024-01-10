@@ -2,7 +2,7 @@
   {
     "name":"org.geotools.data.util.ColorConverterFactory",
     "allPublicMethods":true,
-    "allDeclardConstructors":true,
+    "allDeclaredConstructors":true,
     "allDeclaredFields":true
   }
 ]
