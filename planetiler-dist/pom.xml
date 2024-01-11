@@ -220,11 +220,6 @@
     </profile>
     <profile>
       <id>native</id>
-      <activation>
-        <property>
-          <name>native</name>
-        </property>
-      </activation>
       <dependencies>
         <dependency>
           <groupId>com.onthegomap.planetiler</groupId>
@@ -290,6 +285,16 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
+            <configuration combine.self="override">
+              <compilerArgs>
+                <arg>--add-exports</arg>
+                <arg>java.base/sun.nio.ch=ALL-UNNAMED</arg>
+                <arg>-proc:full</arg>
+              </compilerArgs>
+              <includes>
+                <include>com/onthegomap/planetiler/**</include>
+              </includes>
+            </configuration>
           </plugin>
           <plugin>
             <groupId>org.graalvm.buildtools</groupId>
@@ -326,11 +331,9 @@
                   <trackReflectionMetadata>true</trackReflectionMetadata>
                 </options>
               </agent>
-              <!--
               <jvmArgs>
-                <arg>-Djava.awt.headless=false</arg>
+                <arg>-Djava.awt.headless=true</arg>
               </jvmArgs>
-              -->
               <fallback>false</fallback>
               <verbose>true</verbose>
               <mainClass>${mainClass}</mainClass>
@@ -359,7 +362,9 @@
                   <executable>java</executable>
                   <workingDirectory>${project.build.directory}</workingDirectory>
                   <arguments>
-                    <argument>-Djava.awt.headless=false</argument>
+                    <argument>--add-exports</argument>
+                    <argument>java.base/sun.nio.ch=ALL-UNNAMED</argument>
+                    <argument>-Djava.awt.headless=true</argument>
                     <argument>-Djava.library.path=${env.JAVA_HOME}/lib</argument>
                     <argument>-classpath</argument>
                     <classpath/>

@@ -23,11 +23,11 @@ SOFTWARE.
  */
 package com.onthegomap.planetiler.util;
 
-import com.kenai.jffi.MemoryIO;
+import sun.nio.ch.DirectBuffer;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-//import jnr.ffi.types.size_t;
 import com.sun.jna.Native;
 import com.sun.jna.Library;
 import com.sun.jna.platform.unix.LibCAPI.size_t;
@@ -78,7 +78,7 @@ class Madvise {
     if (pageSize <= 0) {
       throw new IOException("madvise failed, pagesize not available");
     }
-    final long address = MemoryIO.getInstance().getDirectBufferAddress(buffer);
+    final long address = getDirectBufferAddress(buffer);
     final int capacity = buffer.capacity();
 
     long alignedAddress = alignedAddress(address);
@@ -91,6 +91,10 @@ class Madvise {
     } catch (UnsatisfiedLinkError error) {
       throw new IOException("madvise failed", error);
     }
+  }
+
+  static long getDirectBufferAddress(final ByteBuffer buff) {
+    return ((DirectBuffer)buff).address();
   }
 
   public interface NativeC extends Library {

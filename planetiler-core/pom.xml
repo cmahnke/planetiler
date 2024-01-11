@@ -235,11 +235,7 @@
   </build>
   <profiles>
     <profile>
-      <activation>
-        <property>
-          <name>native</name>
-        </property>
-      </activation>
+      <id>native</id>
       <build>
         <plugins>
           <plugin>
@@ -250,6 +246,42 @@
                 <exclude>com/onthegomap/planetiler/util/log4j/**</exclude>
               </excludes>
             </configuration>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>default-jar</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+                <configuration>
+                  <excludes>
+                    <exclude>com/onthegomap/planetiler/util/log4j/**</exclude>
+                    <exclude>com/onthegomap/planetiler/util/Madvise**</exclude>
+                  </excludes>
+                </configuration>
+              </execution>
+              <execution>
+                <id>default-test-jar</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>test-jar</goal>
+                </goals>
+                <configuration>
+                  <!-- reduce the size of the sources jar a bit (leave behind monaco.osm.pbf and *.zip files) -->
+                  <excludes>
+                    <exclude>*.wkb</exclude>
+                    <exclude>*.mbtiles</exclude>
+                    <exclude>*.sqlite</exclude>
+                  </excludes>
+                  <classifier>tests</classifier>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
         </plugins>
       </build>
