@@ -236,8 +236,18 @@
   <profiles>
     <profile>
       <id>native</id>
+      <activation>
+        <property>
+          <name>native</name>
+        </property>
+      </activation>
+      <!-- The is a serious bug in Maven, seems to be related to https://issues.apache.org/jira/browse/MNG-1388 - see linked issues.
+           It's impossible to resolve classifiers of artifacts that are build from a profile within a reactor.
+           The next plugin calls will work around that issue by changing the classifier of this artifact into it's own artifact.
+      -->
       <build>
         <plugins>
+          <!-- Compile and exclude Log4J dependents -->
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
@@ -247,13 +257,13 @@
               </excludes>
             </configuration>
           </plugin>
-
+          <!-- Create a jar file (package) without classes, that need to be removed or are replaced by other modules as a artifact classifier. -->
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-jar-plugin</artifactId>
             <executions>
               <execution>
-                <id>default-jar</id>
+                <id>native-jar</id>
                 <phase>package</phase>
                 <goals>
                   <goal>jar</goal>
@@ -263,25 +273,66 @@
                     <exclude>com/onthegomap/planetiler/util/log4j/**</exclude>
                     <exclude>com/onthegomap/planetiler/util/Madvise**</exclude>
                   </excludes>
-                </configuration>
-              </execution>
-              <execution>
-                <id>default-test-jar</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>test-jar</goal>
-                </goals>
-                <configuration>
-                  <!-- reduce the size of the sources jar a bit (leave behind monaco.osm.pbf and *.zip files) -->
-                  <excludes>
-                    <exclude>*.wkb</exclude>
-                    <exclude>*.mbtiles</exclude>
-                    <exclude>*.sqlite</exclude>
-                  </excludes>
-                  <classifier>tests</classifier>
+                  <classifier>native</classifier>
                 </configuration>
               </execution>
             </executions>
+          </plugin>
+          <!-- Create a copy of the pom.xml file and change it to describe our changed artifact -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>3.1.0</version>
+            <executions>
+              <execution>
+                <phase>package</phase>
+                <configuration>
+                  <target>
+                    <!-- This is a hack that is needed do avoid Maven property expansion.
+                         Ant uses two dollar signs ('$$') instead of one to stop expansion, but this doesn't seem to apply to Maven.
+                    -->
+                    <property name="property-prefix" value="${"/>
+                    <property name="planetiler-revision-token" value="${property-prefix}revision}"/>
+                    <property name="planetiler-revision-value" value="${revision}"/>
+                    <echo>Copying ./pom.xml to ${project.build.directory}/pom.xml</echo>
+                    <copy file="./pom.xml" todir="${project.build.directory}"/>
+                    <echo>Replacing artifactId in ${project.build.directory}/pom.xml</echo>
+                    <replace file="${project.build.directory}/pom.xml">
+                      <replacetoken><![CDATA[<artifactId>planetiler-core</artifactId>]]></replacetoken>
+                      <replacevalue><![CDATA[<artifactId>planetiler-core-native</artifactId>]]></replacevalue>
+                    </replace>
+                    <echo>Replacing ${planetiler-revision-token} with ${planetiler-revision-value} in ${project.build.directory}/pom.xml</echo>
+                    <replace file="${project.build.directory}/pom.xml" token="${planetiler-revision-token}" value="${planetiler-revision-value}"/>
+                  </target>
+                </configuration>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <!-- Install the changed jar file (the one with the classifier 'native') under a different artifactID to fix dependency resolution.
+               This will use the change pom.xml from above
+          -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-install-plugin</artifactId>
+            <version>3.1.1</version>
+            <executions>
+            <execution>
+            <id>install-native</id>
+            <phase>install</phase>
+            <goals>
+              <goal>install-file</goal>
+            </goals>
+            <configuration>
+              <groupId>${project.groupId}</groupId>
+              <artifactId>${project.artifactId}-native</artifactId>
+              <version>${revision}</version>
+              <packaging>jar</packaging>
+              <pomFile>${project.build.directory}/pom.xml</pomFile>
+              <file>${project.build.directory}/${project.artifactId}-${revision}-native.jar</file>
+            </configuration></execution></executions>
           </plugin>
         </plugins>
       </build>

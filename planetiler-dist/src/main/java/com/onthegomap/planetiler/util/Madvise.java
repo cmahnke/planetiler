@@ -23,14 +23,18 @@ SOFTWARE.
  */
 package com.onthegomap.planetiler.util;
 
-import sun.nio.ch.DirectBuffer;
-
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
+import java.lang.reflect.Field;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 import com.sun.jna.Native;
 import com.sun.jna.Library;
 import com.sun.jna.platform.unix.LibCAPI.size_t;
+
+import org.apache.lucene.store.NativePosixUtil;
 
 /**
  * Wrapper for native madvise function to be used via the public API
@@ -45,6 +49,9 @@ class Madvise {
 
   private static final NativeC nativeC = Native.load("c", NativeC.class);
 
+  //private static final VarHandle addressHandle;
+  //private static final Field addressField;
+
   static int pageSize;
 
   static {
@@ -53,7 +60,18 @@ class Madvise {
     } catch (UnsatisfiedLinkError e) {
       pageSize = -1;
     }
+    /*
+    try {
+      addressField = Buffer.class.getDeclaredField("address");
+      addressField.setAccessible(true);
+      //System.out.println();
+      //addressHandle = MethodHandles.lookup().findVarHandle(Buffer.class, "address", long.class);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+    */
   }
+
 
   private static long alignedAddress(long address) {
     return address & (-pageSize);
@@ -78,13 +96,16 @@ class Madvise {
     if (pageSize <= 0) {
       throw new IOException("madvise failed, pagesize not available");
     }
+    /*
     final long address = getDirectBufferAddress(buffer);
     final int capacity = buffer.capacity();
 
     long alignedAddress = alignedAddress(address);
     long alignedSize = alignedSize(alignedAddress, capacity);
+    */
     try {
-      int val = nativeC.posix_madvise(new size_t(alignedAddress), new size_t(alignedSize), value);
+      //int val = nativeC.posix_madvise(new size_t(alignedAddress), new size_t(alignedSize), value);
+      int val = NativePosixUtil.posix_madvise(buffer, value);
       if (val != 0) {
         throw new IOException(String.format("System call madvise failed with code: %d", val));
       }
@@ -93,10 +114,23 @@ class Madvise {
     }
   }
 
+  /*
   static long getDirectBufferAddress(final ByteBuffer buff) {
-    return ((DirectBuffer)buff).address();
+    if (buff.isDirect()) {
+      //See https://developers.redhat.com/articles/2022/05/09/using-unsafe-safely-graalvm-native-image#how_to_fix_unsafe_offset_computations
+      //return ((long) addressHandle.get(buff));
+
+      try {
+        return ((long) addressField.get(buff));
+      } catch (IllegalAccessException e) {
+        throw new RuntimeException(e);
+      }
+    } else {
+      throw new RuntimeException("Couldn't cast to DirectByteBuffer");
+    }
   }
 
+  */
   public interface NativeC extends Library {
 
     int posix_madvise(size_t address, size_t size, int advice);
