@@ -35,6 +35,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -74,13 +75,15 @@ import vector_tile.VectorTileProto;
  */
 @NotThreadSafe
 public class VectorTile {
+  public static final long NO_FEATURE_ID = 0;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(VectorTile.class);
 
   // TODO make these configurable
   private static final int EXTENT = 4096;
   private static final double SIZE = 256d;
-  private final Map<String, Layer> layers = new LinkedHashMap<>();
+  // use a treemap to ensure that layers are encoded in a consistent order
+  private final Map<String, Layer> layers = new TreeMap<>();
   private LayerAttrStats.Updater.ForZoom layerStatsTracker = LayerAttrStats.Updater.ForZoom.NOOP;
 
   private static int[] getCommands(Geometry input, int scale) {
@@ -532,7 +535,7 @@ public class VectorTile {
           .setType(feature.geometry().geomType().asProtobufType())
           .addAllGeometry(Ints.asList(feature.geometry().commands()));
 
-        if (feature.id >= 0) {
+        if (feature.id != NO_FEATURE_ID) {
           featureBuilder.setId(feature.id);
         }
 

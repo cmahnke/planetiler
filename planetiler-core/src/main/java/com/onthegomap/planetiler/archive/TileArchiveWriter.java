@@ -88,7 +88,8 @@ public class TileArchiveWriter {
     TileArchiveMetadata tileArchiveMetadata, Path layerStatsPath, PlanetilerConfig config, Stats stats) {
     var timer = stats.startStage("archive");
 
-    int readThreads = config.featureReadThreads();
+    int chunksToRead = Math.max(1, features.chunksToRead());
+    int readThreads = Math.min(config.featureReadThreads(), chunksToRead);
     int threads = config.threads();
     int processThreads = threads < 10 ? threads : threads - readThreads;
     int tileWriteThreads = config.tileWriteThreads();
@@ -296,7 +297,7 @@ public class TileArchiveWriter {
             bytes = switch (config.tileCompression()) {
               case GZIP -> gzip(encoded);
               case NONE -> encoded;
-              case UNKNWON -> throw new IllegalArgumentException("cannot compress \"UNKNOWN\"");
+              case UNKNOWN -> throw new IllegalArgumentException("cannot compress \"UNKNOWN\"");
             };
             layerStats = TileSizeStats.computeTileStats(proto);
             if (encoded.length > config.tileWarningSizeBytes()) {

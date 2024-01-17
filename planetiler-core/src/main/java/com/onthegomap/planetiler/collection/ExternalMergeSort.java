@@ -253,7 +253,12 @@ class ExternalMergeSort implements FeatureSort {
       }
     }
 
-    return LongMerger.mergeIterators(iterators);
+    return LongMerger.mergeIterators(iterators, SortableFeature.COMPARE_BYTES);
+  }
+
+  @Override
+  public int chunksToRead() {
+    return chunks.size();
   }
 
   public int chunks() {
